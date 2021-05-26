@@ -8,6 +8,8 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
+    "gantt-schedule-timeline-calendar": "^3.7.1",
+    "moment": "^2.29.1",
     "vue": "^3.0.0"
   },
   "devDependencies": {
