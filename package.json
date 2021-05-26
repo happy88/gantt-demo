@@ -7,9 +7,10 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
+    "@popperjs/core": "^2.9.2",
     "core-js": "^3.6.5",
     "gantt-schedule-timeline-calendar": "^3.7.1",
-    "moment": "^2.29.1",
+    "tippy.js": "^6.3.1",
     "vue": "^3.0.0"
   },
   "devDependencies": {
