@@ -2,7 +2,7 @@
   <div class="wrapper">
     <div class="btns-wrapper">
       <button>刷新</button>
-      <button>新增</button>
+      <button @click="add">新增</button>
       <button>编辑</button>
       <button>删除</button>
       <button>保存</button>
@@ -28,10 +28,11 @@ import { Plugin as ItemMovement } from 'gantt-schedule-timeline-calendar/dist/pl
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 import 'gantt-schedule-timeline-calendar/dist/style.css';
-const GSTCID = GSTC.api.GSTCID;
 const date = GSTC.api.date;
 
-let gstc,state;
+/**
+ * Convert data from array into GSTC object
+ */
 
 /**
  * 默认展示三个月时间
@@ -40,30 +41,9 @@ export default {
   name: 'GSTC',
   data () {
     return {
-      itemData: '',
-      columnsFromDB: [
-        {
-          id: "id",
-          // data: "id",
-          data: ({ row }) => GSTC.api.sourceID(row.id), // show original id (not internal GSTCID)
-          sortable: ({ row }) => Number(GSTC.api.sourceID(row.id)), // sort by id converted to number
-          width: 80,
-          header: { content: "序号" }
-        },
-        {
-          id: "workshop",
-          data: "workshop",
-          width: 100,
-          expander: true,
-          header: { content: "车间" }
-        },
-        {
-          id: "lineEquipment",
-          data: "lineEquipment",
-          width: 100,
-          header: { content: "线别/设备" }
-        }
-      ],
+      GSTCID: GSTC.api.GSTCID,
+      gstc: null,
+      state: null,
       rowsFromDB: [
         {
           id: "1",
@@ -93,6 +73,7 @@ export default {
           lineEquipment: "机台03",
         }
       ],
+
       itemsFromDB: [
         {
           id: "1",
@@ -135,11 +116,73 @@ export default {
           style: {  // 每个块的样式
             background: 'blue'
           }
+        },
+        {
+          id: "6",
+          rowId: "6",
+          label: "666666666666666666",
+          time: {
+            start: date('2021-05-28').startOf('day').valueOf(),
+            end: date('2021-05-30').endOf('day').valueOf(),
+          },
+          style: {  // 每个块的样式
+            background: 'red'
+          }
         }
       ],
-      config: {
+      columnsFromDB: [
+        {
+          id: "id",
+          // data: "id",
+          data: ({ row }) => GSTC.api.sourceID(row.id), // show original id (not internal GSTCID)
+          sortable: ({ row }) => Number(GSTC.api.sourceID(row.id)), // sort by id converted to number
+          width: 80,
+          header: { content: "序号" }
+        },
+        {
+          id: "workshop",
+          data: "workshop",
+          width: 100,
+          expander: true,
+          header: { content: "车间" }
+        },
+        {
+          id: "lineEquipment",
+          data: "lineEquipment",
+          width: 100,
+          header: { content: "线别/设备" }
+        }
+      ],
+      itemData: {},
+      config: {}
+    }
+  },
+  mounted () {
+    this.configFun(this.columnsFromDB,this.rowsFromDB,this.itemsFromDB)
+    this.runDantt(this.config)
+  },
+  methods: {
+    configFun (columnsFromDB,rowsFromDB,itemsFromDB) {
+      columnsFromDB = JSON.parse(JSON.stringify(columnsFromDB))
+      rowsFromDB = JSON.parse(JSON.stringify(rowsFromDB))
+      itemsFromDB = JSON.parse(JSON.stringify(itemsFromDB))
+      this.config = {
         licenseKey: '====BEGIN LICENSE KEY====\nXOfH/lnVASM6et4Co473t9jPIvhmQ/l0X3Ewog30VudX6GVkOB0n3oDx42NtADJ8HjYrhfXKSNu5EMRb5KzCLvMt/pu7xugjbvpyI1glE7Ha6E5VZwRpb4AC8T1KBF67FKAgaI7YFeOtPFROSCKrW5la38jbE5fo+q2N6wAfEti8la2ie6/7U2V+SdJPqkm/mLY/JBHdvDHoUduwe4zgqBUYLTNUgX6aKdlhpZPuHfj2SMeB/tcTJfH48rN1mgGkNkAT9ovROwI7ReLrdlHrHmJ1UwZZnAfxAC3ftIjgTEHsd/f+JrjW6t+kL6Ef1tT1eQ2DPFLJlhluTD91AsZMUg==||U2FsdGVkX1/SWWqU9YmxtM0T6Nm5mClKwqTaoF9wgZd9rNw2xs4hnY8Ilv8DZtFyNt92xym3eB6WA605N5llLm0D68EQtU9ci1rTEDopZ1ODzcqtTVSoFEloNPFSfW6LTIC9+2LSVBeeHXoLEQiLYHWihHu10Xll3KsH9iBObDACDm1PT7IV4uWvNpNeuKJc\npY3C5SG+3sHRX1aeMnHlKLhaIsOdw2IexjvMqocVpfRpX4wnsabNA0VJ3k95zUPS3vTtSegeDhwbl6j+/FZcGk9i+gAy6LuetlKuARjPYn2LH5Be3Ah+ggSBPlxf3JW9rtWNdUoFByHTcFlhzlU9HnpnBUrgcVMhCQ7SAjN9h2NMGmCr10Rn4OE0WtelNqYVig7KmENaPvFT+k2I0cYZ4KWwxxsQNKbjEAxJxrzK4HkaczCvyQbzj4Ppxx/0q+Cns44OeyWcwYD/vSaJm4Kptwpr+L4y5BoSO/WeqhSUQQ85nvOhtE0pSH/ZXYo3pqjPdQRfNm6NFeBl2lwTmZUEuw==\n====END LICENSE KEY====',
         plugins: [TimelinePointer(),Selection(),ItemResizing(),ItemMovement()],
+        list: {
+          columns: {
+            data: this.fromArray(columnsFromDB),
+          },
+          rows: this.fromArray(rowsFromDB),
+        },
+        chart: {
+          time: {
+            from: new Date().getTime() - 10 * 24 * 60 * 60 * 1000,
+            to: new Date().getTime() + 30 * 24 * 60 * 60 * 1000,
+            zoom: 22,
+          },
+          items: this.fromArray(itemsFromDB),
+        },
         locale: {
           weekStart: 0,
           name: "zh",
@@ -154,69 +197,50 @@ export default {
         slots: {
           'chart-timeline-items-row-item': { inner: [this.itemSlot] },
         },
-      }
-    }
-  },
-  mounted () {
-    this.config.list = {
-      columns: {
-        data: this.fromArray(this.columnsFromDB),
-      },
-      rows: this.fromArray(this.rowsFromDB),
-    };
-    this.config.chart = {
-      time: {
-        from: new Date().getTime() - 10 * 24 * 60 * 60 * 1000,
-        to: new Date().getTime() + 30 * 24 * 60 * 60 * 1000,
-        zoom: 22,
-      },
-      items: this.fromArray(this.itemsFromDB),
-    };
-    state = GSTC.api.stateFromConfig(this.config);
+      };
 
-    gstc = GSTC({
-      element: this.$refs.gstc,
-      state,
-    });
-  },
-  methods: {
+    },
+    runDantt (config) {
+      let state = GSTC.api.stateFromConfig(config);
+      this.gstc = GSTC({
+        element: this.$refs.gstc,
+        state,
+      });
+    },
+    add () {
+      let item = {
+        id: "7",
+        rowId: "3",
+        label: "77777777777777",
+        time: {
+          start: date('2021-05-20').startOf('day').valueOf(),
+          end: date('2021-05-24').endOf('day').valueOf(),
+        },
+        style: {  // 每个块的样式
+          background: 'red'
+        }
+      }
+      this.itemsFromDB.push(item)
+      this.configFun(this.columnsFromDB,this.rowsFromDB,this.itemsFromDB)
+      this.runDantt(this.config)
+    },
     fromArray (array) {
       const resultObj = {};
       for (const item of array) {
-        item.id = GSTCID(item.id);
+        item.id = this.GSTCID(item.id);
         if ('rowId' in item) {
-          item.rowId = GSTCID(item.rowId);
+          item.rowId = this.GSTCID(item.rowId);
         }
         if ('parentId' in item) {
-          item.parentId = GSTCID(item.parentId);
+          item.parentId = this.GSTCID(item.parentId);
         }
         resultObj[item.id] = item;
       }
       return resultObj;
     },
-    clickAction (element,data) {
-      let _this = this;
-      function onClick (event) {
-        // data variable will be updated in update method below so it will be always actual
-        _this.itemData = data.item;
-      }
-
-      element.addEventListener('click',onClick);
-
-      return {
-        update (element,newData) {
-          data = newData; // data from parent scope updated
-        },
-
-        destroy (element,data) {
-          element.removeEventListener('click',onClick);
-          _this.itemData = {}
-        },
-      };
-    },
+    // Item slot
     itemSlot (vido,props) {
       const { onChange,update,html,api,getElement } = vido;
-
       // Get element and initialize tippy instance
       let element,tippyInstance;
       function initialize (el) {
@@ -224,7 +248,6 @@ export default {
         // @ts-ignore
         if (!tippyInstance) tippyInstance = tippy(element);
       }
-
       let itemData,startDate,endDate,tooltipContent;
       onChange((newProps) => {
         props = newProps;
@@ -240,8 +263,7 @@ export default {
         update(() => {
           tippyInstance.setContent(tooltipContent);
         });
-      });
-
+      })
       return (content) =>
         html`<div
       directive=${getElement(initialize)}
@@ -250,6 +272,29 @@ export default {
     >
       ${content}
     </div>`;
+    },
+    clickAction (element,data) {
+      let _this = this;
+      function onClick (event) {
+        // data variable will be updated in update method below so it will be always actual
+        _this.$nextTick(() => {
+          console.log('this.itemData',data.item)
+          _this.itemData = data.item;
+        })
+      }
+
+      element.addEventListener('click',onClick);
+
+      return {
+        update (element,newData) {
+          data = newData; // data from parent scope updated
+        },
+
+        destroy (element,data) {
+          element.removeEventListener('click',onClick);
+          _this.itemData = {}
+        },
+      };
     }
   }
 }
