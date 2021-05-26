@@ -193,7 +193,12 @@ export default {
   name: 'GSTC',
   data () {
     return {
-      itemData: {}
+      itemData: {
+        id: "",
+        lineEquipment: "",
+        workshop: "",
+        expander: false
+      }
     }
   },
   mounted () {
@@ -239,13 +244,10 @@ export default {
   },
   methods: {
     clickAction (element,data) {
+      let _this = this;
       function onClick (event) {
-        // data variable will be updated in update method below so it will be always actual
-        // alert(`Event ${data.item.id} clicked!`);
-        console.log(data);
-        this.itemData = JSON.stringify(data.item);
-        this.$nextTick(() => {
-          console.log()
+        _this.$nextTick(() => {
+          _this.itemData = event.row;
         })
       }
 
